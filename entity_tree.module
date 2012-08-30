@@ -52,45 +52,45 @@ function _entity_tree_increment_last_character(&$encoding) {
   }
   if ($length == 0) {
     // ASCII.
-    $materialized_path = ord($encoding[$n]);
+    $codepoint = ord($encoding[$n]);
   }
   else {
     $n -= $length;
     // Convert UTF-8 sequence to Unicode codepoint.
     $mask = ( 1 << (6 - $length)) - 1;
-    $materialized_path = (ord($encoding[$n]) & $mask) << (6 * $length);
+    $codepoint = (ord($encoding[$n]) & $mask) << (6 * $length);
     for ($i = 1; $i <= $length; $i++) {
-      $materialized_path |= (ord($encoding[$n + $i]) & 0x3F) << (6 * ($length - $i));
+      $codepoint |= (ord($encoding[$n + $i]) & 0x3F) << (6 * ($length - $i));
     }
   }
-  // Increment the materialized path integer.
-  $materialized_path++;
+  // Increment the codepoint integer.
+  $codepoint++;
   // Encode the new integer into UTF-8.
-  if ($materialized_path <= 0x007F) {
+  if ($codepoint <= 0x007F) {
     // ASCII. It's still simple.
-    $encoding[$n] = chr($materialized_path);
+    $encoding[$n] = chr($codepoint);
     return;
   }
   // Now, find the length.
-  if ($materialized_path <= 0x07FF) {
+  if ($codepoint <= 0x07FF) {
     $length = 1;
   }
-  elseif ($materialized_path <= 0xFFFF) {
+  elseif ($codepoint <= 0xFFFF) {
     $length = 2;
   }
-  elseif ($materialized_path <= 0x1FFFFF) {
+  elseif ($codepoint <= 0x1FFFFF) {
     $length = 3;
   }
-  elseif ($materialized_path <= 0x3FFFFF) {
+  elseif ($codepoint <= 0x3FFFFF) {
     $length = 4;
   }
-  elseif ($materialized_path <= 0x7FFFFF) {
+  elseif ($codepoint <= 0x7FFFFF) {
     $length = 5;
   }
   // More bit wizardry in PHP, yay!
   $first_mask = array(0, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC);
-  $encoding[$n] = chr($first_mask[$length] | ($materialized_path >> (6 * $length)));
+  $encoding[$n] = chr($first_mask[$length] | ($codepoint >> (6 * $length)));
   for ($i = 1; $i <= $length; $i++) {
-    $encoding[$n + $i] = chr(0x80 | (($materialized_path >> (6 * ($length - $i))) & 0x3F));
+    $encoding[$n + $i] = chr(0x80 | (($codepoint >> (6 * ($length - $i))) & 0x3F));
   }
 }
