@@ -34,6 +34,9 @@ function _entity_tree_add($entity_type, $entity, $parent_id) {
     ->fields(array('entity_type' => $entity_type, 'entity_id' => $entity_id, 'parent_id' => $parent_id))
     ->execute();
   $encoding = db_query("SELECT MAX(encoding) FROM {entity_tree} WHERE parent_id = :parent_id", array(':parent_id' => $parent_id))->fetchField();
+  if (empty($encoding)) {
+    $encoding = chr(0);
+  }
   _entity_tree_increment_last_character($encoding);
   db_update('entity_tree')
     ->fields(array('encoding' => $encoding))
