@@ -55,45 +55,45 @@ function _entity_tree_increment_last_character(&$encoding) {
   }
   if ($length == 0) {
     // ASCII.
-    $codepoint = ord($encoding[$n]);
+    $child_number = ord($encoding[$n]);
   }
   else {
     $n -= $length;
     // Convert UTF-8 sequence to Unicode codepoint.
     $mask = ( 1 << (6 - $length)) - 1;
-    $codepoint = (ord($encoding[$n]) & $mask) << (6 * $length);
+    $child_number = (ord($encoding[$n]) & $mask) << (6 * $length);
     for ($i = 1; $i <= $length; $i++) {
-      $codepoint |= (ord($encoding[$n + $i]) & 0x3F) << (6 * ($length - $i));
+      $child_number |= (ord($encoding[$n + $i]) & 0x3F) << (6 * ($length - $i));
     }
   }
   // Increment the codepoint integer.
-  $codepoint++;
+  $child_number++;
   // Encode the new integer into UTF-8.
-  if ($codepoint <= 0x007F) {
+  if ($child_number <= 0x007F) {
     // ASCII. It's still simple.
-    $encoding[$n] = chr($codepoint);
+    $encoding[$n] = chr($child_number);
     return;
   }
   // Now, find the length.
-  if ($codepoint <= 0x07FF) {
+  if ($child_number <= 0x07FF) {
     $length = 1;
   }
-  elseif ($codepoint <= 0xFFFF) {
+  elseif ($child_number <= 0xFFFF) {
     $length = 2;
   }
-  elseif ($codepoint <= 0x1FFFFF) {
+  elseif ($child_number <= 0x1FFFFF) {
     $length = 3;
   }
-  elseif ($codepoint <= 0x3FFFFF) {
+  elseif ($child_number <= 0x3FFFFF) {
     $length = 4;
   }
-  elseif ($codepoint <= 0x7FFFFF) {
+  elseif ($child_number <= 0x7FFFFF) {
     $length = 5;
   }
   // More bit wizardry in PHP, yay!
   $first_mask = array(0, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC);
-  $encoding[$n] = chr($first_mask[$length] | ($codepoint >> (6 * $length)));
+  $encoding[$n] = chr($first_mask[$length] | ($child_number >> (6 * $length)));
   for ($i = 1; $i <= $length; $i++) {
-    $encoding[$n + $i] = chr(0x80 | (($codepoint >> (6 * ($length - $i))) & 0x3F));
+    $encoding[$n + $i] = chr(0x80 | (($child_number >> (6 * ($length - $i))) & 0x3F));
   }
 }
